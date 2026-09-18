@@ -1,40 +1,104 @@
 # Task Management System
 
-A full-stack task management application organized into separate frontend and backend applications.
+A full-stack task management application designed as a practical software-engineering project, with a React frontend and FastAPI/SQLAlchemy backend.
 
-## 🎯 Focus
-This project demonstrates practical client/server architecture, API-driven workflows, task management, and a structure that can be extended with authentication, validation, testing, and deployment.
+## Engineering goals
 
-## 🏗️ Architecture
-Frontend → HTTP/API → Backend → Application data/services
+This project is being developed beyond a basic CRUD demo to demonstrate:
 
-## 📁 Structure
-    taskmanagement/
-    ├── backend/
-    └── frontend/
+- REST API design
+- Input validation and HTTP error handling
+- SQLAlchemy persistence
+- Automated API tests
+- Environment-based configuration
+- Frontend/backend separation
+- Continuous integration
+- Production-ready project hygiene
 
-## 🚀 Getting Started
-    git clone https://github.com/cypher2k22/taskmanagement.git
-    cd taskmanagement
+## Architecture
 
-    cd backend
-    npm install
+React + Vite → FastAPI → SQLAlchemy → Database
 
-    cd ../frontend
-    npm install
+## Backend
 
-Use the package scripts in each directory to run the development servers.
+- Python
+- FastAPI
+- SQLAlchemy
+- Pydantic
+- Pytest
+- Uvicorn
 
-## 🔧 Engineering Roadmap
-- Automated tests
-- API validation
+### API surface
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Service health check |
+| GET | `/tasks` | List tasks |
+| POST | `/tasks` | Create a task |
+| PATCH | `/tasks/{id}` | Toggle completion |
+| PUT | `/tasks/{id}` | Toggle completion (compatibility) |
+| DELETE | `/tasks/{id}` | Delete a task |
+
+### Run backend
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn main:app --reload
+```
+
+The API is available at `http://127.0.0.1:8000` and FastAPI documentation at `/docs`.
+
+### Run tests
+
+```bash
+cd backend
+pytest
+```
+
+## Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Production checks:
+
+```bash
+npm run lint
+npm run build
+```
+
+## CI
+
+GitHub Actions runs backend tests plus frontend lint/build checks on pushes and pull requests targeting `main`.
+
+## Security hygiene
+
+- `.env` files are ignored and are not part of the repository.
+- Local virtual environments are ignored.
+- Database files and Python bytecode are ignored.
+- Use `.env.example` as the safe configuration template.
+
+## Roadmap
+
 - Authentication and authorization
-- Centralized error handling
-- Structured logging
-- CI checks
-- Production deployment
+- User-owned tasks
+- Task priorities and due dates
+- Filtering, sorting, and pagination
+- Database migrations
+- API integration tests with isolated test database
+- Dockerized deployment
+- Observability and structured logging
 
-## 👤 Author
+## Author
+
 **Bakeerathan Karthigan**  
-Computer Engineering Undergraduate  
+Computer Engineering Undergraduate · University of Sri Jayewardenepura
+
 GitHub: https://github.com/cypher2k22
