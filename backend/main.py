@@ -62,6 +62,7 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/tasks/{task_id}", response_model=schemas.TaskResponse)
+@app.put("/tasks/{task_id}", response_model=schemas.TaskResponse)
 def toggle_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if task is None:
