@@ -47,9 +47,23 @@ export default function App() {
 
   useEffect(() => {
     const controller = new AbortController();
-    loadTasks(controller.signal);
+
+    async function fetchInitialTasks() {
+      try {
+        const data = await requestJson(TASKS_URL, { signal: controller.signal });
+        if (!controller.signal.aborted) setTasks(data);
+      } catch (err) {
+        if (!controller.signal.aborted && err.name !== "AbortError") {
+          setError(`Unable to load tasks. Check that the API is running at ${API_BASE_URL}. ${err.message}`);
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+
+    fetchInitialTasks();
     return () => controller.abort();
-  }, [loadTasks]);
+  }, []);
 
   const addTask = async (event) => {
     event.preventDefault();
