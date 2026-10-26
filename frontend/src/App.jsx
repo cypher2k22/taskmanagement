@@ -28,8 +28,11 @@ export default function App() {
   const [error, setError] = useState("");
 
   const loadTasks = useCallback(async (signal) => {
-    setLoading(true);
-    setError("");
+    // The initial loading state is already true; only retries need to reset it here.
+    if (!signal) {
+      setLoading(true);
+      setError("");
+    }
     try {
       const data = await requestJson(TASKS_URL, { signal });
       setTasks(data);
