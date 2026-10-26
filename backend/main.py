@@ -1,3 +1,5 @@
+import os
+
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -10,12 +12,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Task Management API", version="1.0.0")
 
+# Configure browser origins through CORS_ORIGINS, e.g.
+# CORS_ORIGINS=http://localhost:5173,https://your-app.example
+_default_origins = "http://localhost:5173,http://127.0.0.1:5173"
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", _default_origins).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
@@ -32,11 +43,18 @@ def health_check():
     return {"status": "ok", "service": "task-management-api"}
 
 
-@app.post("/tasks", response_model=schemas.TaskResponse, status_code=status.HTTP_201_CREATED)
+@app.post(
+    "/tasks",
+    response_model=schemas.TaskResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     text = task.text.strip()
     if not text:
-        raise HTTPException(status_code=400, detail="Task text cannot be empty")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Task text cannot be empty",
+        )
 
     new_task = models.Task(text=text)
     db.add(new_task)
@@ -50,11 +68,14 @@ def get_tasks(db: Session = Depends(get_db)):
     return db.query(models.Task).order_by(models.Task.id.desc()).all()
 
 
-@app.delete("/tasks/{task_id}")
+@app.delete("/tasks/{task_id}", status_code=status.HTTP_200_OK)
 def delete_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        )
 
     db.delete(task)
     db.commit()
@@ -66,7 +87,10 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 def toggle_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        )
 
     task.done = not task.done
     db.commit()
