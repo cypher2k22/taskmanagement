@@ -4,31 +4,28 @@ A full-stack task management application designed as a practical software-engine
 
 ## Engineering goals
 
-This project is being developed beyond a basic CRUD demo to demonstrate:
-
-- REST API design
-- Input validation and HTTP error handling
+- REST API design and HTTP status codes
+- Input validation and error handling
 - SQLAlchemy persistence
-- Automated API tests
+- Automated API tests with an isolated test database
 - Environment-based configuration
-- Frontend/backend separation
-- Continuous integration
-- Production-ready project hygiene
+- Accessible frontend loading, empty, and error states
+- Frontend/backend separation and continuous integration
+- Secure development defaults
 
 ## Architecture
 
-React + Vite → FastAPI → SQLAlchemy → Database
+React + Vite → FastAPI → SQLAlchemy → SQLite (default) or another SQLAlchemy-supported database
 
 ## Backend
 
 - Python
-- FastAPI
+- FastAPI and Pydantic
 - SQLAlchemy
-- Pydantic
-- Pytest
+- Pytest and HTTPX
 - Uvicorn
 
-### API surface
+### API endpoints
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -36,36 +33,48 @@ React + Vite → FastAPI → SQLAlchemy → Database
 | GET | `/tasks` | List tasks |
 | POST | `/tasks` | Create a task |
 | PATCH | `/tasks/{id}` | Toggle completion |
-| PUT | `/tasks/{id}` | Toggle completion (compatibility) |
+| PUT | `/tasks/{id}` | Toggle completion (compatibility endpoint) |
 | DELETE | `/tasks/{id}` | Delete a task |
 
-### Run backend
+### Run the backend
 
 ```bash
 cd backend
 python -m venv .venv
+# macOS/Linux:
 source .venv/bin/activate
+# Windows PowerShell:
+# .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 cp .env.example .env
 uvicorn main:app --reload
 ```
 
-The API is available at `http://127.0.0.1:8000` and FastAPI documentation at `/docs`.
+The API runs at `http://127.0.0.1:8000`; interactive API documentation is available at `http://127.0.0.1:8000/docs`.
 
-### Run tests
+By default, the app uses a local SQLite database. Set `DATABASE_URL` in `backend/.env` to use another SQLAlchemy-supported database. Configure `CORS_ORIGINS` as a comma-separated list of trusted browser origins; the defaults allow the local Vite development server.
+
+### Run backend tests
 
 ```bash
 cd backend
 pytest
 ```
 
+Tests use a fresh temporary SQLite database per test, so they do not depend on or modify your development task data.
+
 ## Frontend
+
+In a separate terminal:
 
 ```bash
 cd frontend
 npm install
+cp .env.example .env
 npm run dev
 ```
+
+Set `VITE_API_URL` in `frontend/.env` to the base URL of the backend (without a trailing slash). The default is `http://127.0.0.1:8000`.
 
 Production checks:
 
@@ -74,25 +83,36 @@ npm run lint
 npm run build
 ```
 
-## CI
+## Continuous integration
 
-GitHub Actions runs backend tests plus frontend lint/build checks on pushes and pull requests targeting `main`.
+GitHub Actions runs backend tests and frontend lint/build checks on pushes and pull requests targeting `main`.
 
-## Security hygiene
+## Current functionality
 
-- `.env` files are ignored and are not part of the repository.
-- Local virtual environments are ignored.
-- Database files and Python bytecode are ignored.
-- Use `.env.example` as the safe configuration template.
+- Create tasks with input validation
+- List persisted tasks
+- Toggle completion state
+- Delete tasks
+- Filter all, pending, and completed tasks
+- Display task totals and completed totals
+- Show loading, API error, and empty states
+- Configure the backend URL through a frontend environment variable
+
+## Security and reliability notes
+
+- CORS is restricted to configured origins rather than allowing every browser origin.
+- Keep local `.env` files and credentials out of Git.
+- The frontend displays API errors instead of silently failing.
+- The API validates task text and returns a 404 for operations on missing tasks.
+- Authentication and user-owned tasks are not implemented yet; this is currently a single-user demo and should not be exposed as a multi-user production service without access controls.
 
 ## Roadmap
 
 - Authentication and authorization
 - User-owned tasks
 - Task priorities and due dates
-- Filtering, sorting, and pagination
+- Filtering, sorting, and pagination on the API
 - Database migrations
-- API integration tests with isolated test database
 - Dockerized deployment
 - Observability and structured logging
 
